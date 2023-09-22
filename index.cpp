@@ -3,18 +3,13 @@
 #include <algorithm>
 #include <bitset>
 #include <cstdint>
+#include <cstring>
 #include <sstream>
 #include <vector>
 
+#define bint_length 101
+
 using namespace std;
-
-struct bfloat {
-  uint32_t mantissa_h : 20;
-  uint64_t mantissa_l : 64;
-  uint32_t order : 17;
-
-  uint8_t sign : 1;
-};
 
 string string_multiply(string nums1, string nums2) {
   int n = nums1.size();
@@ -79,29 +74,29 @@ string long_div(string number, int divisor) {
   return ans;
 }
 
-bool fullAdder(bool b1, bool b2, bool &carry) {
+bool full_adder(bool b1, bool b2, bool &carry) {
   bool sum = (b1 ^ b2) ^ carry;
   carry = (b1 && b2) || (b1 && carry) || (b2 && carry);
   return sum;
 }
 
-bitset<101> bitsetAdd(bitset<101> &x, bitset<101> &y) {
+template <uint8_t T> bitset<T> bitset_add(bitset<T> &x, bitset<T> &y) {
   bool carry = false;
   // bitset to store the sum of the two bitsets
-  bitset<101> ans;
-  for (int i = 0; i < 100; i++) {
-    ans[101 - i - 1] = fullAdder(x[101 - i - 1], y[101 - i - 1], carry);
+  bitset<T> ans;
+  for (int i = 0; i < T - 1; i++) {
+    ans[T - i - 1] = full_adder(x[T - i - 1], y[T - i - 1], carry);
   }
   return ans;
 }
 
 class bint_t {
 private:
-  bitset<101> bint;
+  bitset<bint_length> bint;
 
 public:
   explicit bint_t() {}
-  bint_t(bitset<101> bits) { this->bint = bits; }
+  bint_t(bitset<bint_length> bits) { this->bint = bits; }
 
   bint_t(string long_string) {
     if (long_string[0] == '+') {
@@ -121,7 +116,7 @@ public:
         is_first_not_null_met = 1;
       }
       if (is_first_not_null_met) {
-        new_string.push_back(long_string[i]); 
+        new_string.push_back(long_string[i]);
       }
     }
 
@@ -142,24 +137,24 @@ public:
       }
 
       long_string = long_div(long_string, 2);
-      bint[101 - 1 - counter] = (remainder);
+      bint[bint_length - 1 - counter] = (remainder);
       counter++;
     }
 
     if (long_string == "1") {
-      bint[101 - 1 - counter] = (1);
+      bint[bint_length - 1 - counter] = (1);
     }
 
     print();
   }
 
   bint_t operator+(bint_t &right_bint) {
-    bitset<101> m = bitsetAdd(this->bint, right_bint.bint);
+    bitset<bint_length> m = bitset_add<101>(this->bint, right_bint.bint);
     return bint_t(m);
   }
 
   void print() {
-    for (int i = 0; i < 101; i++) {
+    for (int i = 0; i < bint_length; i++) {
       cout << bint[i];
     }
     cout << endl;
@@ -167,8 +162,8 @@ public:
 
   void print_dec() {
     string sum = "0";
-    for (uint8_t i = 0; i < 100; i++) {
-      uint8_t binary_number = this->bint[101 - i - 1];
+    for (uint8_t i = 0; i < bint_length - 1; i++) {
+      uint8_t binary_number = this->bint[bint_length - i - 1];
       string number = to_string(binary_number);
       for (uint8_t j = 0; j < i; j++) {
         if (i != 0) {
@@ -181,12 +176,45 @@ public:
   }
 };
 
-int main() {
-  bint_t by_n1("-00000000001");
-  by_n1.print();
-  // bint_t by_n2("2");
+class bfloat_t {
+private:
+  // sign order mantissa 102bit
+  bitset<1 + 17 + 84> bfloat;
 
-  // bint_t by_n3 = by_n1 + by_n2;
-  // by_n3.print();
-  // by_n3.print_dec();
-}
+public:
+  bfloat_t(string long_string) {
+    if (long_string[0] == '-') {
+      bfloat[0] = 0b1;
+    }
+
+    if (long_string[0] == '+') {
+      bfloat[0] = 0b0;
+    }
+
+    std::string delimiter = ".";
+
+    std::string left = {0};
+    std::string right = {0};
+
+    size_t pos = 0;
+
+    pos = long_string.find(delimiter);
+    left = long_string.substr(0, pos);
+    std::cout << left << std::endl;
+    long_string.erase(0, pos + delimiter.length());
+
+    if (pos != string::npos) {
+      cout << "HI" << endl;
+      right = long_string.substr(0, pos);
+    }
+
+    string result = string_multiply(right, "2");
+
+    // короче я придумал, нужно умножать так как выше и сравнивать длины если появлися разряд значит 1 если нет 0. Но это
+    // нужно выполнять только после операдции приведения целой части к двоичному виду чтобы расчитать оставшееся место.
+
+    cout << left << '.' << right;
+  }
+};
+
+int main() { bfloat_t my_float("1000000001"); }
