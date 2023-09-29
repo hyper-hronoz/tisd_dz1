@@ -153,12 +153,15 @@ public:
     return bint_t(m);
   }
 
-  void print() {
+  virtual void print() {
     for (int i = 0; i < bint_length; i++) {
       cout << bint[i];
     }
     cout << endl;
   }
+
+  bitset<bint_length>* get_bitset() { return &this->bint; }
+
 
   void print_dec() {
     string sum = "0";
@@ -176,10 +179,14 @@ public:
   }
 };
 
+#define sign_size 1
+#define order_size 17
+#define mantissa_size 84
+
 class bfloat_t {
 private:
   // sign order mantissa 102bit
-  bitset<1 + 17 + 84> bfloat;
+  bitset<sign_size + order_size + mantissa_size> bfloat;
 
 public:
   bfloat_t(string long_string) {
@@ -204,17 +211,55 @@ public:
     long_string.erase(0, pos + delimiter.length());
 
     if (pos != string::npos) {
-      cout << "HI" << endl;
       right = long_string.substr(0, pos);
     }
 
-    string result = string_multiply(right, "2");
+    uint8_t counter = 0;
+    uint8_t string_prev_length = 0;
+    uint8_t string_current_length = 0;
+    while (right != "0" && counter < 84) {
+      string_prev_length = right.length();
+      right = string_multiply(right, "2");
+      string_current_length = right.length();
+      if (string_prev_length < string_current_length) {
+        bfloat[counter + sign_size + order_size - 1] = 0b1;
+        right.erase(0, 1);
+      } else {
+        bfloat[counter + 17 + sign_size + order_size - 1] = 0b0;
+      }
+      counter++;
+    }
 
-    // короче я придумал, нужно умножать так как выше и сравнивать длины если появлися разряд значит 1 если нет 0. Но это
-    // нужно выполнять только после операдции приведения целой части к двоичному виду чтобы расчитать оставшееся место.
+    bint_t my_intt(left);
+    bitset<bint_length> *left_binary = my_intt.get_bitset();
+    uint8_t length = 0;
 
-    cout << left << '.' << right;
+    uint8_t sagnificant_index = 0;
+    for (uint8_t i; i < bint_length; i++) {
+      if (left_binary[i] == 1) {
+        sagnificant_index = 1;
+      }
+      if (sagnificant_index != 0) {
+        length++;
+      }
+    }
+    // короче я придумал, нужно умножать так как выше и сравнивать длины если
+    // появлися разряд значит 1 если нет 0. Но это нужно выполнять только после
+    // операдции приведения целой части к двоичному виду чтобы расчитать
+    // оставшееся место.
+  }
+
+  void print() {
+    for (int i = 17; i < sign_size + order_size + mantissa_size; i++) {
+      cout << bfloat[i];
+    }
+    cout << endl;
   }
 };
 
-int main() { bfloat_t my_float("1000000001"); }
+int main() {
+  bfloat_t my_float("7234.123");
+  my_float.print();
+  // bint_t my_bint("123");
+  // my_bint.print();
+}
