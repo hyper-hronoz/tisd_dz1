@@ -123,7 +123,7 @@ public:
     long_string = new_string;
 
     uint8_t counter = 0;
-    while (long_string != "0" && long_string != "1") {
+    while (long_string != "0" && long_string != "1" & long_string != "") {
       char last_char_of_long_string = long_string[long_string.length() - 1];
       uint8_t remainder = 0;
 
@@ -215,18 +215,24 @@ public:
 
     std::string delimiter = ".";
 
-    std::string left = {0};
-    std::string right = {0};
+    std::string left = {'0'};
+    std::string right = {'0'};
 
     size_t pos = 0;
 
     pos = long_string.find(delimiter);
     left = long_string.substr(0, pos);
     std::cout << left << std::endl;
-    long_string.erase(0, pos + delimiter.length());
+    long_string.erase(0, pos);
 
-    right = long_string;
+    bool is_right_exists = 0;
+    if (long_string.find(delimiter) != std::string::npos) {
+      long_string.erase(0, 1);
+      right = long_string;
+      is_right_exists = 1;
+    }
 
+    cout << "Left: " << left << endl;
     uint8_t index_to_write = 0;
     bint_t binary_left(left);
     for (uint8_t i = bint_length - binary_left.get_length(); i < bint_length;
@@ -237,23 +243,24 @@ public:
     }
 
     cout << "Right: " << right << endl;
-    uint8_t string_prev_length = 0;
-    uint8_t string_current_length = 0;
-    while (right != "0" && index_to_write < 84) {
-      string_prev_length = right.length();
-      right = string_multiply(right, "2");
-      cout << right << "-> ";
-      string_current_length = right.length();
-      if (string_prev_length < string_current_length) {
-        bfloat[index_to_write + sign_size + order_sign + order_size] = 0b1;
-        right.erase(0, 1);
-      } else {
-        bfloat[index_to_write + sign_size + order_sign + order_size] = 0b0;
+    if (is_right_exists) {
+      uint8_t string_prev_length = 0;
+      uint8_t string_current_length = 0;
+      while (right != "0" && index_to_write < 84) {
+        string_prev_length = right.length();
+        right = string_multiply(right, "2");
+        cout << right << "-> ";
+        string_current_length = right.length();
+        if (string_prev_length < string_current_length) {
+          bfloat[index_to_write + sign_size + order_sign + order_size] = 0b1;
+          right.erase(0, 1);
+        } else {
+          bfloat[index_to_write + sign_size + order_sign + order_size] = 0b0;
+        }
+        index_to_write++;
       }
-      index_to_write++;
     }
 
-    cout << pos << endl;
     this->print();
 
     // короче я придумал, нужно умножать так как выше и сравнивать длины если
@@ -275,8 +282,8 @@ public:
 };
 
 int main() {
-  bfloat_t my_float("5.142");
+  bfloat_t my_float("5.75");
   my_float.print();
-  // bint_t my_bint("123");
+  // bint_t my_bint("100");
   // my_bint.print();
 }
