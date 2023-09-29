@@ -195,7 +195,7 @@ public:
 
 #define sign_size 1
 #define order_size 17
-#define order_sign 1 
+#define order_sign 1
 #define mantissa_size 84
 
 class bfloat_t {
@@ -225,9 +225,7 @@ public:
     std::cout << left << std::endl;
     long_string.erase(0, pos + delimiter.length());
 
-    if (pos != string::npos) {
-      right = long_string.substr(0, pos);
-    }
+    right = long_string;
 
     uint8_t index_to_write = 0;
     bint_t binary_left(left);
@@ -238,17 +236,19 @@ public:
       index_to_write++;
     }
 
+    cout << "Right: " << right << endl;
     uint8_t string_prev_length = 0;
     uint8_t string_current_length = 0;
     while (right != "0" && index_to_write < 84) {
       string_prev_length = right.length();
       right = string_multiply(right, "2");
+      cout << right << "-> ";
       string_current_length = right.length();
       if (string_prev_length < string_current_length) {
-        bfloat[index_to_write + sign_size + order_sign + order_size - 1] = 0b1;
+        bfloat[index_to_write + sign_size + order_sign + order_size] = 0b1;
         right.erase(0, 1);
       } else {
-        bfloat[index_to_write + 17 + sign_size + order_sign + order_size - 1] = 0b0;
+        bfloat[index_to_write + sign_size + order_sign + order_size] = 0b0;
       }
       index_to_write++;
     }
@@ -263,7 +263,8 @@ public:
   }
 
   void print() {
-    for (int i = 0; i < sign_size + order_sign + order_size + mantissa_size; i++) {
+    for (int i = 0; i < sign_size + order_sign + order_size + mantissa_size;
+         i++) {
       if (i == 19 || i == 1 || i == 2) {
         cout << ".";
       }
@@ -274,7 +275,7 @@ public:
 };
 
 int main() {
-  bfloat_t my_float("7234.123");
+  bfloat_t my_float("5.142");
   my_float.print();
   // bint_t my_bint("123");
   // my_bint.print();
