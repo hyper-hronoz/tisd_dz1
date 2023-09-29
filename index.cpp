@@ -160,8 +160,22 @@ public:
     cout << endl;
   }
 
-  bitset<bint_length>* get_bitset() { return &this->bint; }
+  bitset<bint_length> get_bitset() { return this->bint; }
 
+  uint8_t get_length() {
+    uint8_t length = 0;
+    uint8_t sagnificant_index = 0;
+    for (uint8_t i; i < bint_length; i++) {
+      // cout << bint[i] << endl;
+      if (bint[i] == 1) {
+        sagnificant_index = 1;
+      }
+      if (sagnificant_index != 0) {
+        length++;
+      }
+    }
+    return length;
+  }
 
   void print_dec() {
     string sum = "0";
@@ -181,12 +195,13 @@ public:
 
 #define sign_size 1
 #define order_size 17
+#define order_sign 1 
 #define mantissa_size 84
 
 class bfloat_t {
 private:
   // sign order mantissa 102bit
-  bitset<sign_size + order_size + mantissa_size> bfloat;
+  bitset<sign_size + order_sign + order_size + mantissa_size> bfloat;
 
 public:
   bfloat_t(string long_string) {
@@ -214,35 +229,33 @@ public:
       right = long_string.substr(0, pos);
     }
 
-    uint8_t counter = 0;
+    uint8_t index_to_write = 0;
+    bint_t binary_left(left);
+    for (uint8_t i = bint_length - binary_left.get_length(); i < bint_length;
+         i++) {
+      bfloat[index_to_write + sign_size + order_sign + order_size] =
+          binary_left.get_bitset()[i];
+      index_to_write++;
+    }
+
     uint8_t string_prev_length = 0;
     uint8_t string_current_length = 0;
-    while (right != "0" && counter < 84) {
+    while (right != "0" && index_to_write < 84) {
       string_prev_length = right.length();
       right = string_multiply(right, "2");
       string_current_length = right.length();
       if (string_prev_length < string_current_length) {
-        bfloat[counter + sign_size + order_size - 1] = 0b1;
+        bfloat[index_to_write + sign_size + order_sign + order_size - 1] = 0b1;
         right.erase(0, 1);
       } else {
-        bfloat[counter + 17 + sign_size + order_size - 1] = 0b0;
+        bfloat[index_to_write + 17 + sign_size + order_sign + order_size - 1] = 0b0;
       }
-      counter++;
+      index_to_write++;
     }
 
-    bint_t my_intt(left);
-    bitset<bint_length> *left_binary = my_intt.get_bitset();
-    uint8_t length = 0;
+    cout << pos << endl;
+    this->print();
 
-    uint8_t sagnificant_index = 0;
-    for (uint8_t i; i < bint_length; i++) {
-      if (left_binary[i] == 1) {
-        sagnificant_index = 1;
-      }
-      if (sagnificant_index != 0) {
-        length++;
-      }
-    }
     // короче я придумал, нужно умножать так как выше и сравнивать длины если
     // появлися разряд значит 1 если нет 0. Но это нужно выполнять только после
     // операдции приведения целой части к двоичному виду чтобы расчитать
@@ -250,7 +263,10 @@ public:
   }
 
   void print() {
-    for (int i = 17; i < sign_size + order_size + mantissa_size; i++) {
+    for (int i = 0; i < sign_size + order_sign + order_size + mantissa_size; i++) {
+      if (i == 19 || i == 1 || i == 2) {
+        cout << ".";
+      }
       cout << bfloat[i];
     }
     cout << endl;
