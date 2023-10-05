@@ -207,10 +207,12 @@ public:
   bfloat_t(string long_string) {
     if (long_string[0] == '-') {
       bfloat[0] = 0b1;
+      long_string[0] = '0';
     }
 
     if (long_string[0] == '+') {
       bfloat[0] = 0b0;
+      long_string[0] = '0';
     }
 
     std::string delimiter = ".";
@@ -222,7 +224,7 @@ public:
 
     pos = long_string.find(delimiter);
     left = long_string.substr(0, pos);
-    std::cout << left << std::endl;
+    // std::cout << left << std::endl;
     long_string.erase(0, pos);
 
     bool is_right_exists = 0;
@@ -242,14 +244,14 @@ public:
       index_to_write++;
     }
 
-    cout << "Right: " << right << endl;
+    // cout << "Right: " << right << endl;
     if (is_right_exists) {
       uint8_t string_prev_length = 0;
       uint8_t string_current_length = 0;
       while (right != "0" && index_to_write < 84) {
         string_prev_length = right.length();
         right = string_multiply(right, "2");
-        cout << right << "-> ";
+        // cout << right << "-> ";
         string_current_length = right.length();
         if (string_prev_length < string_current_length) {
           bfloat[index_to_write + sign_size + order_sign + order_size] = 0b1;
@@ -258,6 +260,15 @@ public:
           bfloat[index_to_write + sign_size + order_sign + order_size] = 0b0;
         }
         index_to_write++;
+      }
+    }
+
+
+    bfloat[1] = 1;
+    for (uint8_t i = 0; i < left.length(); i++) {
+      if (left[i] != '0') {
+        bfloat[1] = 0;
+        break;
       }
     }
 
@@ -282,7 +293,7 @@ public:
 };
 
 int main() {
-  bfloat_t my_float("5.75");
+  bfloat_t my_float("-02.75");
   my_float.print();
   // bint_t my_bint("100");
   // my_bint.print();

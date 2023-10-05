@@ -1,1 +1,1 @@
-g++ -O0 -g index.cpp && ./a.out
+g++ -O0 -g index2.cpp
